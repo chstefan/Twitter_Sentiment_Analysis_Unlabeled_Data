@@ -1,0 +1,96 @@
+import pandas as pd
+from sklearn.metrics import accuracy_score, classification_report
+from transformers import pipeline
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from datasets import Dataset, DatasetDict
+from sklearn.model_selection import train_test_split
+from transformers import AutoTokenizer
+from transformers import DataCollatorWithPadding
+
+training_data_path = '/Users/chantalstefan/Documents/Scripting/Data Analytics Portfolio für Git/Unsupervised Learning/twitter_training.csv'
+validation_data_path = '/Users/chantalstefan/Documents/Scripting/Data Analytics Portfolio für Git/Unsupervised Learning/twitter_validation.csv'
+
+training_df = pd.read_csv(training_data_path)
+validation_df = pd.read_csv(validation_data_path)
+
+columns = ['ID', 'Topic', 'Sentiment', 'Text']
+training_df.columns = columns
+validation_df.columns = columns
+
+training_df.dropna(subset=['Text'], inplace=True)
+validation_df.dropna(subset=['Text'], inplace=True)
+
+training_df = training_df[['Sentiment', 'Text']]
+validation_df = validation_df[['Sentiment', 'Text']]
+
+sentiment_encoding = {'Positive': 3, 'Neutral': 2, 'Negative': 1, 'Irrelevant': 0}
+training_df['Sentiment'] = training_df['Sentiment'].map(sentiment_encoding)
+validation_df['Sentiment'] = validation_df['Sentiment'].map(sentiment_encoding)
+
+train_dataset = Dataset.from_pandas(training_df)
+val_dataset = Dataset.from_pandas(validation_df)
+datasets = DatasetDict({'train': train_dataset, 'validation': val_dataset})
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+def tokenize_function(example):
+    return tokenizer(example['Text'], truncation=True, padding='max_length', max_length=512)
+
+tokenized_datasets = datasets.map(tokenize_function, batched=True)
+
+tokenized_datasets = tokenized_datasets.rename_column("Sentiment", "labels")
+
+tokenized_datasets.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
+
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=4)
+
+training_args = TrainingArguments(
+    output_dir='./results',
+    num_train_epochs=3,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    warmup_steps=500,
+    weight_decay=0.01,
+    logging_dir='./logs',
+    evaluation_strategy='epoch',
+    save_strategy='epoch',
+    load_best_model_at_end=True,
+    metric_for_best_model='accuracy',
+)
+
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt")
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets['train'],
+    eval_dataset=tokenized_datasets['validation'],
+    tokenizer=tokenizer,
+    data_collator=data_collator,
+)
+
+trainer.train()
+
+validation_df['labels'] = validation_df['Sentiment'].map(sentiment_encoding)
+validation_df = validation_df[['labels', 'Text']].dropna(subset=['Text'])
+
+def tokenize_function(examples):
+    return tokenizer(examples["Text"], padding="max_length", truncation=True)
+
+tokenized_validation_dataset = Dataset.from_pandas(validation_df).map(tokenize_function, batched=True)
+tokenized_validation_dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'labels'])
+
+trainer.model = BertForSequenceClassification.from_pretrained('./results/checkpoint-best')
+
+predictions = trainer.predict(tokenized_validation_dataset)
+
+predicted_labels = predictions.predictions.argmax(-1)
+true_labels = predictions.label_ids
+
+accuracy = accuracy_score(true_labels, predicted_labels)
+print(f"Validation accuracy: {accuracy}")
+
+from sklearn.metrics import classification_report
+
+report = classification_report(true_labels, predicted_labels, target_names=sentiment_encoding.keys())
+print(report)
