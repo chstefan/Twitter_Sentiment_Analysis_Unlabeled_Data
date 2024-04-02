@@ -1,21 +1,53 @@
-# Twitter_Sentiment_Analysis_with_BERT
+# Twitter Sentiment Analysis with BERT
 
-# Data Loading:
-Imported the pandas library for data manipulation and analysis.
-Loaded the Twitter training and validation datasets from CSV files using pd.read_csv().
-#Data Inspection and Preliminary Analysis:
-Printed the first few rows of both datasets with .head() to get an initial look at the data structure.
-Checked for missing values in both datasets using .isnull().sum() to identify data completeness.
-# Data Cleaning and Preparation:
-Assigned new column names (ID, Topic, Sentiment, Text) to both datasets for clarity.
-Removed rows from the training dataset where the Text column was missing, as these entries are not useful for sentiment analysis.
-# Sentiment Analysis Setup:
-Imported the pipeline function from the Hugging Face transformers library to utilize pre-trained models for sentiment analysis.
-Initialized the sentiment analysis pipeline, specifying the use of PyTorch (framework="pt") to ensure compatibility with the deep learning library being used.
-# Sentiment Prediction:
-Defined a function predict_sentiment to apply the sentiment analysis pipeline to a piece of text, returning the model's sentiment label (e.g., POSITIVE, NEGATIVE).
-Applied this function to the Text column of the validation dataset, storing the predictions in a new column, Predicted_Sentiment.
-# Validation and Accuracy Assessment:
-Mapped manually labeled sentiments in the validation dataset to match the format of the model's predicted sentiments (if necessary).
-Calculated the accuracy of the model's predictions compared to the manual labels to assess how well the model performed.
-Generated a detailed classification report providing precision, recall, and F1-score for each sentiment class, offering a deeper insight into the model's performance.
+This project focuses on performing sentiment analysis on Twitter data using a BERT model, which is a deep learning approach developed by Google for natural language processing (NLP). The objective is to classify tweets into various sentiment categories: Positive, Neutral, Negative, and Irrelevant. This guide will walk you through the process of setting up the project, training the BERT model, and evaluating its performance.
+
+## Project Structure
+
+- **Data**: The dataset consists of Twitter messages with corresponding sentiment labels. Data files should be placed in the `Data Analytics Portfolio für Git/Unsupervised Learning` directory.
+- **Scripts**: The main Python script for training and evaluating the model is provided.
+- **Results**: Model checkpoints and logs are saved to the `./results` and `./logs` directories, respectively.
+
+## Requirements
+
+- Python 3.8 or higher
+- pandas
+- scikit-learn
+- transformers
+- datasets
+
+You can install the required packages using pip:
+
+```bash
+pip install pandas scikit-learn transformers datasets
+
+##Data Preparation
+
+The dataset should be in CSV format with columns for ID, Topic, Sentiment, and Text. The script expects two files:
+
+twitter_training.csv: Used for training the model.
+twitter_validation.csv: Used for validating the model's performance.
+Make sure to update the paths to these files in the script if necessary.
+
+##Model Training
+
+The script uses the BertForSequenceClassification model from the Hugging Face transformers library, pre-trained on the bert-base-uncased model. The training process includes tokenizing the tweets, encoding the sentiments, and fine-tuning the BERT model for classification.
+
+To start training the model, run the Python script:
+python sentiment_analysis.py
+
+##Evaluation
+
+After training, the model's performance is evaluated on the validation dataset using accuracy and a classification report, which includes precision, recall, and F1-score for each sentiment category.
+
+##Customization
+
+You can adjust the training parameters in the TrainingArguments class instance to experiment with different configurations, such as the number of epochs, batch size, and learning rate.
+
+##License
+
+This project is open-source and available under the MIT License. Feel free to use, modify, and distribute the code as you see fit.
+
+##Contribution
+
+Contributions to the project are welcome! Whether it's reporting a bug, discussing improvements, or submitting a pull request, all contributions are appreciated.
