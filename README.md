@@ -22,7 +22,7 @@ You can install the required packages using pip:
 pip install pandas scikit-learn transformers datasets
 
 ```
-##Data Preparation
+## Data Preparation
 
 The dataset should be in CSV format with columns for ID, Topic, Sentiment, and Text. The script expects two files:
 
@@ -30,25 +30,25 @@ twitter_training.csv: Used for training the model.
 twitter_validation.csv: Used for validating the model's performance.
 Make sure to update the paths to these files in the script if necessary.
 
-##Model Training
+## Model Training
 
 The script uses the BertForSequenceClassification model from the Hugging Face transformers library, pre-trained on the bert-base-uncased model. The training process includes tokenizing the tweets, encoding the sentiments, and fine-tuning the BERT model for classification.
 
 To start training the model, run the Python script:
 python sentiment_analysis.py
 
-##Evaluation
+## Evaluation
 
 After training, the model's performance is evaluated on the validation dataset using accuracy and a classification report, which includes precision, recall, and F1-score for each sentiment category.
 
-##Customization
+## Customization
 
 You can adjust the training parameters in the TrainingArguments class instance to experiment with different configurations, such as the number of epochs, batch size, and learning rate.
 
-##License
+## License
 
 This project is open-source and available under the MIT License. Feel free to use, modify, and distribute the code as you see fit.
 
-##Contribution
+## Contribution
 
 Contributions to the project are welcome! Whether it's reporting a bug, discussing improvements, or submitting a pull request, all contributions are appreciated.
